@@ -97,9 +97,9 @@ const est={
     state.questions.splice(idx, 1); // remove so not repeated
 
     //gets all the elements of the webpage and sets them to state values
-    est.current.textContent = attempted + 1;
+    est.current.textContent = state.attempted + 1;
     est.qContainer.innerHTML = `
-      <h2 style="color:#d44; font-size:2.2em; margin-bottom:20px;">${type}</h2>
+      <h2 style="color:#d44; font-size:2.2em; margin-bottom:20px;">${state.type}</h2>
       <img src="${state.currentQuestion.questionImage}" alt="Question" style="max-width:95%; border:2px solid #333; border-radius:12px;">`;
     est.answer.value = '';
     est.feedback.textContent = '';
