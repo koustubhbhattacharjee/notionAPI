@@ -20,7 +20,7 @@ try{
   const sevenDaysAgo = new Date();
   const currentDate= sevenDaysAgo.toISOString().split('T')[0];
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-  console.log(sevenDaysAgo)
+
   
  
   const targetDate = sevenDaysAgo.toISOString().split('T')[0];
@@ -89,7 +89,7 @@ try{
           const richText = block[type].rich_text;
           if (richText.length > 0) {
             answerText = richText.map(t => t.plain_text).join('');
-            console.log(answerText)
+        
           }
         }
       }
@@ -111,7 +111,7 @@ try{
   doNowQuestions = extracted;
   console.log(`Loaded ${doNowQuestions.length} do Now questions`);
     DoNowDict= doNowQuestions.reduce((dict,e)=> {
-        console.log(e.answer)
+        
         dict[e.answer]=e
         return dict 
     },{})
@@ -208,19 +208,20 @@ app.get('/api/exitTicket', (req, res) => {
   res.json(todaysExitQuestions);
 });
 
-const doNowMissed=[]
+
 
 app.post('/api/check', (req, res) => {
-  const { userAnswer, correctAnswer } = req.body;
+  const { userAnswer, correctAnswer,type } = req.body;
   const isCorrect = userAnswer.trim().toLowerCase() === correctAnswer;
-  if (!isCorrect && req.body.type==="Do Now"){
-    if (!(correctAnswer in DoNowDict)) {
+  if (!isCorrect && type==="Do Now"){
+    if (correctAnswer in DoNowDict) {
+        console.log(todaysExitQuestions.length);
         todaysExitQuestions.pop();
         todaysExitQuestions.push(DoNowDict[correctAnswer])
 
     }
   else if (res.type==="Exit Ticket"){
-    if(!(correctAnswer in ExitTicketDict)){
+    if(correctAnswer in ExitTicketDict){
             console.log("Exit ticket answered")
     }
   }
