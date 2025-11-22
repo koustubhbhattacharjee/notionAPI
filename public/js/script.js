@@ -1,14 +1,15 @@
 import('./timer.js')
 
 document.addEventListener('DOMContentLoaded', async () => {
-  let questions = [];
-  let doNowQuestions=[];
-  let exitTicketQuestions=[];
-  let currentQuestion = null;
-  let score = 0;
-  let attempted = 0;
-  let type=null;
-  
+  let state={
+  questions : [],
+  doNowQuestions:[],
+  exitTicketQuestions:[],
+  currentQuestion :null,
+  score :0,
+  attempted: 0,
+  type: null
+  }
 const est={
   qContainer:document.getElementById('question-container'),
   answer:document.getElementById('answer'),
@@ -17,7 +18,8 @@ const est={
   current:document.getElementById('current'),
   feedback:document.getElementById('feedback'),
   attempted:document.getElementById('attempted'),
-  correct: document.getElementById('correct')
+  correct: document.getElementById('correct'),
+  total:document.getElementById('total')
 
 
 }
@@ -42,45 +44,43 @@ const est={
 
 
   async function loadDoNowQuestions() {
-    score=0
-    attempted=0
+    state.score=state.attempted=0
     const res= await fetch('/api/doNow')
-    doNowQuestions= await res.json()
+    state.doNowQuestions= await res.json()
 
     //startSidebarTimer(60*10,"Do Now")
-    questions=[...doNowQuestions]       //shallow copy
-
-    document.getElementById('total').textContent = questions.length;
-    type='Do Now'
+    state.questions=[...state.doNowQuestions]       //shallow copy
+    est.total.textContent = state.questions.length;
+    state.type='Do Now'
     nextQuestion()
   }
 
   async function loadExitTicketQuestions() {
-    score=0
-    attempted=0
-    document.getElementById('total').textContent = questions.length;
+    state.score=0
+    state.attempted=0
+    est.total.textContent = state.questions.length;
     const res = await fetch('/api/exitTicket')
-    exitTicketQuestions= await res.json()
+    state.exitTicketQuestions= await res.json()
    
     //startSidebarTimer(60*10,"Exit ticket")
-    questions=[...exitTicketQuestions]       //shallow copy
+    state.questions=[...state.exitTicketQuestions]       //shallow copy
     
-    type='Exit Ticket'
+    state.type='Exit Ticket'
     nextQuestion()
   }
 
   function nextQuestion() {
     // exits if questions are done
-    if (questions.length === 0){
-        if(type=== 'Do Now') {
-      est.qContainer.innerHTML = `<h2> ${type} completed!</h2>`;
+    if (state.questions.length === 0){
+        if(state.type=== 'Do Now') {
+      est.qContainer.innerHTML = `<h2> ${state.type} completed!</h2>`;
       est.answer.style.display='none';
       est.submit.style.display='none';
       est.eTbutton.style.display='block';
       return;
     }
      else{
-        est.qContainer.innerHTML = `<h2> ${type} completed!, see you next class</h2>`;
+        est.qContainer.innerHTML = `<h2> ${state.type} completed!, see you next class</h2>`;
         est.answer.style.display='none';
         est.submit.style.display='none';
         est.eTbutton.style.display='none'
@@ -92,15 +92,15 @@ const est={
     est.answer.style.display='inline-block'
     est.submit.style.display='inline-block'
     //pick a random question 
-    const idx = Math.floor(Math.random() * questions.length);
-    currentQuestion = questions[idx];
-    questions.splice(idx, 1); // remove so not repeated
+    const idx = Math.floor(Math.random() * state.questions.length);
+    state.currentQuestion = state.questions[idx];
+    state.questions.splice(idx, 1); // remove so not repeated
 
     //gets all the elements of the webpage and sets them to state values
     est.current.textContent = attempted + 1;
     est.qContainer.innerHTML = `
       <h2 style="color:#d44; font-size:2.2em; margin-bottom:20px;">${type}</h2>
-      <img src="${currentQuestion.questionImage}" alt="Question" style="max-width:95%; border:2px solid #333; border-radius:12px;">`;
+      <img src="${state.currentQuestion.questionImage}" alt="Question" style="max-width:95%; border:2px solid #333; border-radius:12px;">`;
     est.answer.value = '';
     est.feedback.textContent = '';
     est.answer.focus();
@@ -121,24 +121,23 @@ const est={
     if (!userAnswer.trim()) return;
 
 
-    attempted++;
+    state.attempted++;
    
-    est.attempted.textContent = attempted;
+    est.attempted.textContent = state.attempted;
     const data=await sendQuestions({userAnswer,
-                            correctAnswer:currentQuestion.answer,
-                            type:type
+                            correctAnswer:state.currentQuestion.answer,
+                            type:state.type
                         })
     
     if (data.correct)
     {
-      score++;
-      est.correct.textContent = score;
+      state.score++;
+      est.correct.textContent = state.score;
       est.feedback.innerHTML = '<strong style="color:green">Correct!</strong>';
-      console.log("is here")
       
 
     } else {
-      est.feedback.innerHTML = `<strong style="color:red">Wrong!</strong> Correct answer: ${currentQuestion.answer}`;
+      est.feedback.innerHTML = `<strong style="color:red">Wrong!</strong> Correct answer: ${state.currentQuestion.answer}`;
     }
 
 
