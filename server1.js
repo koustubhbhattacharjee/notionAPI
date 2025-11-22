@@ -257,4 +257,4 @@ loadQuestions()
 // }, 10 * 60 * 1000); // exactly 10 minutes
 //loadTodaysExitTicket();
 
-app.listen(3000, () => console.log('Server running on http://localhost:3000'));
+app.listen(process.env.PORT||8000, () => console.log('Server running on http://localhost:8000'));
