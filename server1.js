@@ -215,7 +215,8 @@ app.post('/api/check', (req, res) => {
   const isCorrect = userAnswer.trim().toLowerCase() === correctAnswer;
   if (!isCorrect && req.body.type==="Do Now"){
     if (!(correctAnswer in DoNowDict)) {
-        doNowMissed.push(DoNowDict[correctAnswer])
+        todaysExitQuestions.pop();
+        todaysExitQuestions.push(DoNowDict[correctAnswer])
 
     }
   else if (res.type==="Exit Ticket"){
