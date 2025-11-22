@@ -9,7 +9,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   let attempted = 0;
   let type=null;
   
+const est={
+  qContainer:document.getElementById('question-container'),
+  answer:document.getElementById('answer'),
+  submit:document.getElementById('submit'),
+  eTbutton:document.getElementById('start-exit'),
+  current:document.getElementById('current'),
+  feedback:document.getElementById('feedback'),
+  attempted:document.getElementById('attempted'),
+  correct: document.getElementById('corrected')
 
+
+}
   async function sendQuestions(data){
     const url='/api/check'
     const res= await fetch(url, {
@@ -62,45 +73,41 @@ document.addEventListener('DOMContentLoaded', async () => {
     // exits if questions are done
     if (questions.length === 0){
         if(type=== 'Do Now') {
-      document.getElementById('question-container').innerHTML = `<h2> ${type} completed!</h2>`;
-        document.getElementById('answer').style.display='none';
-        document.getElementById('submit').style.display='none';
-        document.getElementById('start-exit').style.display='block';
-       
+      est.qContainer.innerHTML = `<h2> ${type} completed!</h2>`;
+      est.answer.style.display='none';
+      est.submit.style.display='none';
+      est.eTbutton.style.display='block';
       return;
     }
      else{
-         document.getElementById('question-container').innerHTML = `<h2> ${type} completed!, see you next class</h2>`;
-        document.getElementById('answer').style.display='none';
-        document.getElementById('submit').style.display='none';
-        document.getElementById('start-exit').style.display='none'
-
-     
-    
+        est.qContainer.innerHTML = `<h2> ${type} completed!, see you next class</h2>`;
+        est.answer.style.display='none';
+        est.submit.style.display='none';
+        est.eTbutton.style.display='none'
       return;
      }
     }
 
-    document.getElementById('start-exit').style.display='none'
-    document.getElementById('answer').style.display='inline-block'
-    document.getElementById('submit').style.display='inline-block'
+    est.eTbutton.style.display='none'
+    est.answer.style.display='inline-block'
+    est.submit.style.display='inline-block'
     //pick a random question 
     const idx = Math.floor(Math.random() * questions.length);
     currentQuestion = questions[idx];
     questions.splice(idx, 1); // remove so not repeated
 
     //gets all the elements of the webpage and sets them to state values
-    document.getElementById('current').textContent = attempted + 1;
-    document.getElementById('question-container').innerHTML = `
+    est.current.textContent = attempted + 1;
+    est.qContainer.innerHTML = `
       <h2 style="color:#d44; font-size:2.2em; margin-bottom:20px;">${type}</h2>
       <img src="${currentQuestion.questionImage}" alt="Question" style="max-width:95%; border:2px solid #333; border-radius:12px;">`;
-    document.getElementById('answer').value = '';
-    document.getElementById('feedback').textContent = '';
-    document.getElementById('answer').focus();
+    est.answer.value = '';
+    est.feedback.textContent = '';
+    est.answer.focus();
   }
     
 
-    document.getElementById('start-exit').addEventListener('click', async () =>{
+    est.eTbutton.addEventListener('click', async () =>{
 
        await loadExitTicketQuestions();
    })
@@ -108,15 +115,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     
 
-  document.getElementById('submit').addEventListener('click', async () => {
-    const userAnswer = document.getElementById('answer').value;
+  est.submit.addEventListener('click', async () => {
+    const userAnswer = est.answer.value;
     //if there is no answer, then do the following
     if (!userAnswer.trim()) return;
 
 
     attempted++;
    
-    document.getElementById('attempted').textContent = attempted;
+    est.attempted.textContent = attempted;
     const data=await sendQuestions({userAnswer,
                             correctAnswer:currentQuestion.answer,
                             type:type
@@ -125,13 +132,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (data.correct)
     {
       score++;
-      document.getElementById('correct').textContent = score;
-      document.getElementById('feedback').innerHTML = '<strong style="color:green">Correct!</strong>';
+      est.correct.textContent = score;
+      est.feedback.innerHTML = '<strong style="color:green">Correct!</strong>';
       console.log("is here")
       
 
     } else {
-      document.getElementById('feedback').innerHTML = `<strong style="color:red">Wrong!</strong> Correct answer: ${currentQuestion.answer}`;
+      est.feedback.innerHTML = `<strong style="color:red">Wrong!</strong> Correct answer: ${currentQuestion.answer}`;
     }
 
 
@@ -157,8 +164,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   // Allow Enter key
-  document.getElementById('answer').addEventListener('keypress', e => {
-    if (e.key === 'Enter') document.getElementById('submit').click();
+  est.answer.addEventListener('keypress', e => {
+    if (e.key === 'Enter') est.submit.click();
   });
 
   await loadDoNowQuestions();
