@@ -17,7 +17,7 @@ const est={
   current:document.getElementById('current'),
   feedback:document.getElementById('feedback'),
   attempted:document.getElementById('attempted'),
-  correct: document.getElementById('corrected')
+  correct: document.getElementById('correct')
 
 
 }
