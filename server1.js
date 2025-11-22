@@ -15,49 +15,38 @@ let todaysExitQuestions = [];
 let ExitTicketDict={};
 let DoNowDict={};
 
+async function dataSources(){
+   const database= await notion.databases.retrieve(
+        {database_id: DATABASE_ID}
+    );
+    const datasourceid= database.data_sources[0].id;
+
+  return datasourceid
+
+}
+
 async function loadQuestions() {
 try{
   const sevenDaysAgo = new Date();
   const currentDate= sevenDaysAgo.toISOString().split('T')[0];
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
+  const data_sources= await dataSources()
   
  
   const targetDate = sevenDaysAgo.toISOString().split('T')[0];
 
-    const database= await notion.databases.retrieve(
-        {database_id: DATABASE_ID}
-    );
-    const datasourceid= database.data_sources[0].id;
+    
    
   const response = await notion.dataSources.query({
-    data_source_id: datasourceid,
+    data_source_id: data_sources,
     filter: {
-        and:[
-        {
-            property:"Date Covered", 
-            date:{
-                before: currentDate
-            }
-        
-        },{
-        or:[{
-          property: "Date Covered",          
-          date: {
-            after: targetDate
+        property:"Status",
+        status:{
+            equals:"To be reviewed"
           }
-        },
-        {
-            property:"Date Covered", 
-            date:{
-                equals: targetDate
-            }
-        },
-       
-        ] }
-    ]    
+        }    
     },
-  });
+  );
 
 
 
@@ -112,7 +101,7 @@ try{
   console.log(`Loaded ${doNowQuestions.length} do Now questions`);
     DoNowDict= doNowQuestions.reduce((dict,e)=> {
         
-        dict[e.answer]=e
+        dict[e.pageId]=e
         return dict 
     },{})
 }
@@ -122,19 +111,16 @@ catch(error){
 }
 
 async function loadTodaysExitTicket() {
-  const today = new Date().toISOString().split('T')[0]; // "2025-11-18"
+  //const today = new Date().toISOString().split('T')[0]; // "2025-11-18"
+  const datasources= await dataSources()
 
   try {
-    const database= await notion.databases.retrieve(
-        {database_id: DATABASE_ID}
-    );
-    const datasourceid= database.data_sources[0].id;
     const response = await notion.dataSources.query({
-      data_source_id: datasourceid, // your original Do Now database
+      data_source_id: datasources, // your original Do Now database
       filter: {
-        property: "Date Covered",
-        date: {
-          equals: today
+        property: "Status",
+        status: {
+          equals: "Not started"
         }
       },
      
@@ -187,7 +173,7 @@ async function loadTodaysExitTicket() {
 
     todaysExitQuestions = extracted;
     ExitTicketDict= todaysExitQuestions.reduce((dict,e)=> {
-        dict[e.answer]=e
+        dict[e.pageId]=e
         return dict 
     },{})
     console.log(`Exit Ticket: Loaded ${extracted.length} exit ticket question(s)`);
@@ -210,24 +196,58 @@ app.get('/api/exitTicket', (req, res) => {
 
 
 
-app.post('/api/check', (req, res) => {
-  const { userAnswer, correctAnswer,type } = req.body;
+app.post('/api/check', async (req, res) => {
+  const { userAnswer, correctAnswer,type,pageId } = req.body;
   const isCorrect = userAnswer.trim().toLowerCase() === correctAnswer;
-  if (!isCorrect && type==="Do Now"){
-    if (correctAnswer in DoNowDict) {
-        console.log(todaysExitQuestions.length);
-        todaysExitQuestions.pop();
-        todaysExitQuestions.push(DoNowDict[correctAnswer])
+  if (pageId){
+    const response= await notion.pages.retrieve({
+          page_id: pageId,
+        })
+    const value=response.properties["Weakness Score"].number
+  
+  if (type==="Do Now"){
+       
+    const res= await notion.pages.update(
+          {
+            page_id: pageId,
+            properties:{
+              "Weakness Score":{
+                number: isCorrect? 0: value+1
+              }, 
+              "Status":{
+                status: {
+                  name:isCorrect? "Done": "To be reviewed"
+                }
+              }
+            }
 
-    }
-  else if (res.type==="Exit Ticket"){
-    if(correctAnswer in ExitTicketDict){
-            console.log("Exit ticket answered")
+          }
+        )
+      todaysExitQuestions.pop();
+      todaysExitQuestions.push(DoNowDict[pageId])  
+  }
+  
+  if(type==="Exit Ticket"){
+
+      const res2= await notion.pages.update(
+        {
+          page_id: pageId, 
+          properties:{
+          "Weakness Score":{
+              number: isCorrect? 0:value+1
+          },
+          "Status":{
+            status: 
+            {
+              name:"To be reviewed"
+            }
+          }
+        }
+      }
+      )
     }
   }
-    
-  }
-  res.json({ correct: isCorrect });
+res.json({ correct: isCorrect });
 });
 
 

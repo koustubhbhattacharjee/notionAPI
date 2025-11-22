@@ -122,11 +122,12 @@ const est={
 
 
     state.attempted++;
-   
+    console.log(state.currentQuestion.pageId)
     est.attempted.textContent = state.attempted;
     const data=await sendQuestions({userAnswer,
                             correctAnswer:state.currentQuestion.answer,
-                            type:state.type
+                            type:state.type,
+                            pageId:state.currentQuestion.pageId
                         })
     
     if (data.correct)
