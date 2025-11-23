@@ -9,7 +9,7 @@ class APIcalls{
         this._todaysExitQuestions=[];
         this._exitTicketDict={};
         this._doNowDict={};
-        this._notion=new Client({ auth: process.env.NOTION_TOKEN });
+        this._notion=new Client({ auth: process.env.NOTION_TOKEN , notionVersion: "2025-09-03"});
         this._databaseId=process.env.NOTION_DATABASE_ID;
     }
 
