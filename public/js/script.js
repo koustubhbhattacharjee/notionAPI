@@ -64,24 +64,26 @@ const est={
   }
 
   async function loadExitTicketQuestions() {
-    state.score=state.attempted=0
-    est.total.textContent = state.questions.length;
-    try{
-    const res = await fetch('/api/exitTicket')
-    if (!res.ok) {
-        const errorText = await res.text();   
-        throw new Error(`HTTP ${res.status}: ${errorText || res.statusText}`);
-    }
-    state.exitTicketQuestions= await res.json()
-   
-    //startSidebarTimer(60*10,"Exit ticket")
-    state.questions=[...state.exitTicketQuestions]       //shallow copy
+    state.score=state.attempted=0;
+    est.current.textContent=1;
     
-    state.type='Exit Ticket'
-    nextQuestion()
-  }
-  catch(error){
-      console.error("failed to load Do Now Questions",error)
+    try{
+        const res = await fetch('/api/exitTicket')
+        if (!res.ok) {
+          const errorText = await res.text();   
+          throw new Error(`HTTP ${res.status}: ${errorText || res.statusText}`);
+          }
+        state.exitTicketQuestions= await res.json()
+    
+        //startSidebarTimer(60*10,"Exit ticket")
+        state.questions=[...state.exitTicketQuestions]       //shallow copy
+        est.total.textContent = state.questions.length;
+      
+        state.type='Exit Ticket'
+        nextQuestion()
+    }
+    catch(error){
+        console.error("failed to load Do Now Questions",error)
     }
   }
 
@@ -96,7 +98,7 @@ const est={
       return;
     }
      else{
-        est.qContainer.innerHTML = `<h2> ${state.type} completed!, see you next class</h2>`;
+        est.qContainer.innerHTML = `<h2> ${state.type} completed! See you next class</h2>`;
         est.answer.style.display='none';
         est.submit.style.display='none';
         est.eTbutton.style.display='none'
