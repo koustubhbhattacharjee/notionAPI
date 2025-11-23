@@ -31,4 +31,15 @@ res.json({ correct: response });
 
 api.runQuestions()
 
-app.listen(process.env.PORT||8000, () => console.log('Server running on http://localhost:8000'));
+if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+ 
+  api.runQuestions();                
+  module.exports = app;           
+} else {
+ 
+  api.runQuestions();
+  const PORT = process.env.PORT || 8000;
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+}
