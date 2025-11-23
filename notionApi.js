@@ -5,10 +5,10 @@ const { Client } = require('@notionhq/client');
 class APIcalls{
 
     constructor(){
-        this._doNowQuestions=[],
-        this._todaysExitQuestions=[],
-        this._exitTicketDict={},
-        this._doNowDict={}
+        this._doNowQuestions=[];
+        this._todaysExitQuestions=[];
+        this._exitTicketDict={};
+        this._doNowDict={};
         this._notion=new Client({ auth: process.env.NOTION_TOKEN });
         this._databaseId=process.env.NOTION_DATABASE_ID;
     }
@@ -43,8 +43,11 @@ class APIcalls{
                     )
 
                 if(!(isCorrect)){
-                this._todaysExitQuestions.pop();
-                this._todaysExitQuestions.push(this._doNowDict[pageId])
+                    if(this._todaysExitQuestions.length!==0){
+                        this._todaysExitQuestions.pop();
+                        
+                    }    
+                    this._todaysExitQuestions.push(this._doNowDict[pageId])
                 }  
             }
             

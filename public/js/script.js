@@ -65,7 +65,7 @@ const est={
 
   async function loadExitTicketQuestions() {
     state.score=state.attempted=0;
-    est.current.textContent=1;
+    
     
     try{
         const res = await fetch('/api/exitTicket')
@@ -78,6 +78,12 @@ const est={
         //startSidebarTimer(60*10,"Exit ticket")
         state.questions=[...state.exitTicketQuestions]       //shallow copy
         est.total.textContent = state.questions.length;
+        if (state.questions.length === 0){
+          est.current.textContent=0;
+        }
+        else{
+          est.current.textContent=1;
+        }
       
         state.type='Exit Ticket'
         nextQuestion()
@@ -87,46 +93,61 @@ const est={
     }
   }
 
-  function nextQuestion() {
-    // exits if questions are done
-    if (state.questions.length === 0){
-        if(state.type=== 'Do Now') {
-      est.qContainer.innerHTML = `<h2> ${state.type} completed!</h2>`;
-      est.answer.style.display='none';
-      est.submit.style.display='none';
-      est.eTbutton.style.display='block';
-      return;
-    }
-     else{
+  function afterDoNowHTML(){
+          est.qContainer.innerHTML = `<h2> ${state.type} completed!</h2>`;
+          est.answer.style.display='none';
+          est.submit.style.display='none';
+          est.eTbutton.style.display='block';
+
+  }
+
+  function afterExitTicketHTML(){
         est.qContainer.innerHTML = `<h2> ${state.type} completed! See you next class</h2>`;
         est.answer.style.display='none';
         est.submit.style.display='none';
         est.eTbutton.style.display='none'
+  }
+
+  function duringQuestionsHTML(idx){
+      est.eTbutton.style.display='none'
+      est.answer.style.display='inline-block'
+      est.submit.style.display='inline-block'
+    //pick a random question 
+      
+      state.currentQuestion = state.questions[idx];
+      state.questions.splice(idx, 1); // remove so not repeated
+
+    //gets all the elements of the webpage and sets them to state values
+      est.current.textContent = state.attempted + 1;
+      est.qContainer.innerHTML = `
+        <h2 style="color:#d44; font-size:2.2em; margin-bottom:20px;">${state.type}</h2>
+        <img src="${state.currentQuestion.questionImage}" alt="Question" style="max-width:95%; border:2px solid #333; border-radius:12px;">`;
+      est.answer.value = '';
+      est.feedback.textContent = '';
+      est.answer.focus();
+
+  }
+
+  function nextQuestion() {
+    // exits if questions are done
+    if (state.questions.length === 0){
+        if(state.type=== 'Do Now') {
+          afterDoNowHTML()
+          return 
+    }
+     else{
+          afterExitTicketHTML()
       return;
      }
     }
-
-    est.eTbutton.style.display='none'
-    est.answer.style.display='inline-block'
-    est.submit.style.display='inline-block'
-    //pick a random question 
     const idx = Math.floor(Math.random() * state.questions.length);
-    state.currentQuestion = state.questions[idx];
-    state.questions.splice(idx, 1); // remove so not repeated
-
-    //gets all the elements of the webpage and sets them to state values
-    est.current.textContent = state.attempted + 1;
-    est.qContainer.innerHTML = `
-      <h2 style="color:#d44; font-size:2.2em; margin-bottom:20px;">${state.type}</h2>
-      <img src="${state.currentQuestion.questionImage}" alt="Question" style="max-width:95%; border:2px solid #333; border-radius:12px;">`;
-    est.answer.value = '';
-    est.feedback.textContent = '';
-    est.answer.focus();
+    duringQuestionsHTML(idx)
+   
   }
-    
-
-    est.eTbutton.addEventListener('click', async () =>{
-
+  
+  
+  est.eTbutton.addEventListener('click', async () =>{
+       state.score=0;
        await loadExitTicketQuestions();
    })
 
@@ -158,26 +179,6 @@ const est={
     } else {
       est.feedback.innerHTML = `<strong style="color:red">Wrong!</strong> Correct answer: ${state.currentQuestion.answer}`;
     }
-
-
-    // const res = await fetch('/api/check', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({
-    //     userAnswer,
-    //     correctAnswer: currentQuestion.answer
-    //   })
-    // });
-    // const data = await res.json();
-
-    // if (data.correct) {
-    //   score++;
-    //   document.getElementById('correct').textContent = score;
-    //   document.getElementById('feedback').innerHTML = '<strong style="color:green">Correct!</strong>';
-    // } else {
-    //   document.getElementById('feedback').innerHTML = `<strong style="color:red">Wrong!</strong> Correct answer: ${currentQuestion.answer}`;
-    // }
-
     setTimeout(nextQuestion, data?.correct ? 1000 : 3000);
   });
 
