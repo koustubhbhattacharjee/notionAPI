@@ -27,7 +27,9 @@ app.post('/api/check', async (req, res) => {
 res.json({ correct: response });
 });
 
-
+app.get('/ping', (req, res) => {
+  res.status(200).send('ok');
+});
 
 
 
