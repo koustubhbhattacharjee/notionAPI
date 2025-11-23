@@ -45,21 +45,33 @@ const est={
 
   async function loadDoNowQuestions() {
     state.score=state.attempted=0
+    try{
     const res= await fetch('/api/doNow')
+    if (!res.ok) {
+        const errorText = await res.text();   
+        throw new Error(`HTTP ${res.status}: ${errorText || res.statusText}`);
+    }
     state.doNowQuestions= await res.json()
 
     //startSidebarTimer(60*10,"Do Now")
     state.questions=[...state.doNowQuestions]       //shallow copy
     est.total.textContent = state.questions.length;
     state.type='Do Now'
-    nextQuestion()
+    nextQuestion()}
+    catch(error){
+      console.error("failed to load Do Now Questions",error)
+    }
   }
 
   async function loadExitTicketQuestions() {
-    state.score=0
-    state.attempted=0
+    state.score=state.attempted=0
     est.total.textContent = state.questions.length;
+    try{
     const res = await fetch('/api/exitTicket')
+    if (!res.ok) {
+        const errorText = await res.text();   
+        throw new Error(`HTTP ${res.status}: ${errorText || res.statusText}`);
+    }
     state.exitTicketQuestions= await res.json()
    
     //startSidebarTimer(60*10,"Exit ticket")
@@ -67,6 +79,10 @@ const est={
     
     state.type='Exit Ticket'
     nextQuestion()
+  }
+  catch(error){
+      console.error("failed to load Do Now Questions",error)
+    }
   }
 
   function nextQuestion() {
