@@ -21,7 +21,8 @@ app.get('/api/exitTicket', (req, res) => {
 
 app.post('/api/check', async (req, res) => {
   
-  const response=api.doNoWExitTicketStatusAndSubstitution(req)
+  const response=await api.doNoWExitTicketStatusAndSubstitution(req)
+  console.log(response)
   
 res.json({ correct: response });
 });

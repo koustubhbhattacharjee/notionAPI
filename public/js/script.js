@@ -1,4 +1,21 @@
+
+
 import('./timer.js')
+const est={
+  myChart:document.getElementById('myChart').getContext('2d'),
+  qContainer:document.getElementById('question-container'),
+  answer:document.getElementById('answer'),
+  submit:document.getElementById('submit'),
+  eTbutton:document.getElementById('start-exit'),
+  current:document.getElementById('current'),
+  feedback:document.getElementById('feedback'),
+  attempted:document.getElementById('attempted'),
+  correct: document.getElementById('correct'),
+  total:document.getElementById('total'),
+  chart:document.getElementById('myChart'),
+  
+
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
   let state={
@@ -8,21 +25,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   currentQuestion :null,
   score :0,
   attempted: 0,
-  type: null
+  type: null,
+
   }
-const est={
-  qContainer:document.getElementById('question-container'),
-  answer:document.getElementById('answer'),
-  submit:document.getElementById('submit'),
-  eTbutton:document.getElementById('start-exit'),
-  current:document.getElementById('current'),
-  feedback:document.getElementById('feedback'),
-  attempted:document.getElementById('attempted'),
-  correct: document.getElementById('correct'),
-  total:document.getElementById('total')
 
-
-}
   async function sendQuestions(data){
     const url='/api/check'
     const res= await fetch(url, {
@@ -46,18 +52,19 @@ const est={
   async function loadDoNowQuestions() {
     state.score=state.attempted=0
     try{
-    const res= await fetch('/api/doNow')
-    if (!res.ok) {
-        const errorText = await res.text();   
-        throw new Error(`HTTP ${res.status}: ${errorText || res.statusText}`);
-    }
-    state.doNowQuestions= await res.json()
+        const res= await fetch('/api/doNow')
+        if (!res.ok) {
+            const errorText = await res.text();   
+            throw new Error(`HTTP ${res.status}: ${errorText || res.statusText}`);
+        }
+        state.doNowQuestions= await res.json()
 
-    //startSidebarTimer(60*10,"Do Now")
-    state.questions=[...state.doNowQuestions]       //shallow copy
-    est.total.textContent = state.questions.length;
-    state.type='Do Now'
-    nextQuestion()}
+        //startSidebarTimer(60*10,"Do Now")
+        state.questions=[...state.doNowQuestions]       //shallow copy
+        est.total.textContent = state.questions.length;
+        state.type='Do Now'
+        nextQuestion()
+    }
     catch(error){
       console.error("failed to load Do Now Questions",error)
     }
@@ -78,6 +85,7 @@ const est={
         //startSidebarTimer(60*10,"Exit ticket")
         state.questions=[...state.exitTicketQuestions]       //shallow copy
         est.total.textContent = state.questions.length;
+        est.correct.textContent = state.score;
         if (state.questions.length === 0){
           est.current.textContent=0;
         }
@@ -98,20 +106,26 @@ const est={
           est.answer.style.display='none';
           est.submit.style.display='none';
           est.eTbutton.style.display='block';
+          est.feedback.style.display='none';
+          est.chart.style.display='block';
+          pie();
 
   }
 
   function afterExitTicketHTML(){
-        est.qContainer.innerHTML = `<h2> ${state.type} completed! See you next class</h2>`;
+        est.qContainer.innerHTML = `<h2> ${state.type} completed! </h2>`;
         est.answer.style.display='none';
         est.submit.style.display='none';
-        est.eTbutton.style.display='none'
+        est.eTbutton.style.display='none';
+        est.chart.style.display='block';
+        pie();
   }
 
   function duringQuestionsHTML(idx){
       est.eTbutton.style.display='none'
       est.answer.style.display='inline-block'
-      est.submit.style.display='inline-block'
+      est.submit.style.display='inline-block',
+      est.chart.style.display='none'
     //pick a random question 
       
       state.currentQuestion = state.questions[idx];
@@ -130,7 +144,7 @@ const est={
 
   function nextQuestion() {
     // exits if questions are done
-    if (state.questions.length === 0){
+    if (state.questions.length === 0 && state.type!== null){
         if(state.type=== 'Do Now') {
           afterDoNowHTML()
           return 
@@ -142,12 +156,72 @@ const est={
     }
     const idx = Math.floor(Math.random() * state.questions.length);
     duringQuestionsHTML(idx)
+    console.log(state.score,)
    
   }
   
+  let pieChart= new Chart(est.chart,{
+      type:'pie', 
+      data:{
+        labels:['correct','incorrect'],
+        datasets:[
+          {
+            label:'Score',
+            data:[
+              state.score,
+              state.doNowQuestions.length-state.score
+            ]
+          }
+        ]
+      },
+      options:{
+        responsive: true,
+        maintainAspectRatio: true, // respect aspectRatio
+        aspectRatio: 16 / 9,       // optional: forces width/height ratio
+      }
+    })
+
+  function pie(){
+        pieChart.destroy();
+        let remainder=0;
+        if(state.type=="Do Now")
+          {remainder=state.doNowQuestions.length-state.score}
+        else{
+          remainder=state.exitTicketQuestions.length-state.score
+        }
+        console.log("Existing chart instance destroyed successfully.");
+        pieChart= new Chart(est.chart,{
+              type:'pie', 
+                data:{
+                  labels:['correct','incorrect'],
+                  datasets:[
+                    {
+                      label:'Score',
+                      data:[
+                        state.score,
+                        remainder
+                      ]
+                    }
+                  ]
+                },
+                options:{
+                  responsive: true,
+                  maintainAspectRatio: true, // respect aspectRatio
+                  aspectRatio: 16 / 9,       // optional: forces width/height ratio
+                }
+              })
+
+        
+       
+    
+    
+    
+
+  }
   
   est.eTbutton.addEventListener('click', async () =>{
        state.score=0;
+       
        await loadExitTicketQuestions();
    })
 
@@ -172,6 +246,7 @@ const est={
     if (data.correct)
     {
       state.score++;
+    
       est.correct.textContent = state.score;
       est.feedback.innerHTML = '<strong style="color:green">Correct!</strong>';
       
@@ -179,6 +254,7 @@ const est={
     } else {
       est.feedback.innerHTML = `<strong style="color:red">Wrong!</strong> Correct answer: ${state.currentQuestion.answer}`;
     }
+    console.log(state.score)
     setTimeout(nextQuestion, data?.correct ? 1000 : 3000);
   });
 

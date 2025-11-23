@@ -32,3 +32,10 @@ button {
   align-items: center;
 }
 
+.chart-container {
+  width: 600px;        /* desired width */
+  max-width: 90%;      /* shrink on small screens */
+  margin: 16px auto;
+  /* optional: keep a specific aspect ratio */
+  aspect-ratio: 16 / 9; 
+}

@@ -9,7 +9,7 @@ class APIcalls{
         this._todaysExitQuestions=[];
         this._exitTicketDict={};
         this._doNowDict={};
-        this._notion=new Client({ auth: process.env.NOTION_TOKEN , notionVersion: "2025-09-03"});
+        this._notion=new Client({ auth: process.env.NOTION_TOKEN });
         this._databaseId=process.env.NOTION_DATABASE_ID;
     }
 
@@ -43,7 +43,7 @@ class APIcalls{
                     )
 
                 if(!(isCorrect)){
-                    if(this._todaysExitQuestions.length!==0){
+                    if(this._todaysExitQuestions.length>=3){
                         this._todaysExitQuestions.pop();
                         
                     }    
