@@ -32,7 +32,7 @@ res.json({ correct: response });
 
 
 
-const response=api.runQuestions();
+api.runQuestions();
 
 
 

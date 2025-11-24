@@ -1,6 +1,3 @@
-
-
-import('./timer.js')
 const est={
   myChart:document.getElementById('myChart').getContext('2d'),
   qContainer:document.getElementById('question-container'),
@@ -264,6 +261,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   await loadDoNowQuestions();
-  
+
   
 });
