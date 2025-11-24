@@ -9,6 +9,9 @@ const api= new APIcalls()
 app.use(express.static('public'));
 app.use(express.json());
 
+
+ 
+
 app.get('/api/doNow', (req, res) => {
   res.json(api._doNowQuestions);
 });
@@ -27,15 +30,14 @@ app.post('/api/check', async (req, res) => {
 res.json({ correct: response });
 });
 
-app.get('/ping', (req, res) => {
-  res.status(200).send('ok');
-});
+
+
+const response=api.runQuestions();
 
 
 
- 
-  api.runQuestions();
-  const PORT = process.env.PORT || 8000;
-  app.listen(PORT, () => {
+  
+const PORT = process.env.PORT || 8000;
+app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });

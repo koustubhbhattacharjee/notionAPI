@@ -206,6 +206,7 @@ async runQuestions(){
   try{
 const doNowResponse= await this.#loadDoNowQuestions()
 const exiTTicketResponse= await this.#loadTodaysExitTicket()
+return "done"
   
   }
   catch(error)
